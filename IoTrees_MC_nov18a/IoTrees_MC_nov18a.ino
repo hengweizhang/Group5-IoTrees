@@ -32,7 +32,7 @@
 #define SOILPIN 17          //A0/D17 Soil Humidity Analog input
 #define MOTORPIN 23         //A6/D23 Motor  Analog Output
 #define BRIGHTNESSPIN 20    //A3/D20 Photosensor Analog Input 
-
+#define HEARTBEATPIN  13    //D13 Hearbeat
 //Sensors
 #define BRIGHTNESS_LOW 11
 #define BRIGHTNESS_HIGH 231
@@ -76,6 +76,7 @@ void setup() {
   pinMode(SOILPIN,INPUT);
   pinMode(BRIGHTNESSPIN, INPUT);
   pinMode(MOTORPIN, OUTPUT);
+  pinMode(HEARTBEATPIN,OUTPUT);
 
 
   // Defined in thingProperties.h
@@ -111,12 +112,20 @@ void loop() {
     air_temperature = dht.readTemperature();
     air_humidity = dht.readHumidity();
     soil_humidity = analogRead(SOILPIN);
+    brightness = analogRead(BRIGHTNESSPIN);
+    statusMotor =  digitalRead(MOTORPIN);
     Serial.print(F("\n Humidity: "));
     Serial.print(air_humidity);
     Serial.print(F("%  Temperature: "));
     Serial.print(air_temperature);
-    Serial.print(F("Soil Humidity: "));
+    Serial.print(F(" Soil Humidity: "));
     Serial.print(soil_humidity);
+    Serial.print(F(" Brightness: "));
+    Serial.print(brightness);
     Serial.print(F("\n"));
+    Serial.print(statusMotor);
+    Serial.print(F("\n"));
+    digitalWrite(HEARTBEATPIN, !digitalRead(HEARTBEATPIN));
+    digitalWrite(MOTORPIN, !digitalRead(MOTORPIN));
   }
 }
