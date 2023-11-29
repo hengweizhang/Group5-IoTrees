@@ -38,6 +38,10 @@
 #define BRIGHTNESS_HIGH 231
 
 //Variables
+// Values need to be adapted based on opservations
+#define wetSoil 277 // Define max value we consider soil 'wet'
+#define drySoil 380 // Define min value we consider soil 'dry'
+
 // CloudUpdateVariabls
 /*
  CloudTemperatureSensor air_temperature;
@@ -78,7 +82,6 @@ void setup() {
   pinMode(MOTORPIN, OUTPUT);
   pinMode(HEARTBEATPIN,OUTPUT);
 
-
   // Defined in thingProperties.h
   initProperties();
 
@@ -105,9 +108,37 @@ void loop() {
   ArduinoCloud.update();
   // Your code here
 
-  unsigned long currentMillisDHT = millis();
+  //Soild Moisture Measurement
+  int moisture = analogRead(SOILPIN); //reading analog input
+  Serial.print("Analog output: ");
+  Serial.println(moisture);
+  
+  // Determine status of our soil
+  if (moisture < wetSoil) {
+    Serial.println("Status: Soil is too wet");
+  } else if (moisture >= wetSoil && moisture < drySoil) {
+    Serial.println("Status: Soil moisture is perfect");
+  } else {
+    Serial.println("Status: Soil is too dry - time to water!");
+    //value: the duty cycle: between 0 (always off) and 255 (always on). Allowed data types: int.
+    // analogWrite(MOTORPIN, 100);
+    // delay(100);
+    // analogWrite(MOTORPIN, 0);
+    //start watering motor for some time to make it more humid
+  }
+  Serial.println();
+  
+  //Brightness Measurement
+  int brt_pin = analogRead(BRIGHTNESSPIN);
+  int brightness = map(brt_pin, BRIGHTNESS_LOW, BRIGHTNESS_HIGH, 0, 100);
+  Serial.print(F("Brightness: "));
+  Serial.print(brightness);
 
+  //Humidity and Temperature Measurement
+  unsigned long currentMillisDHT = millis();
   if (currentMillisDHT - previousMillisDHT >= updatePeriod) {
+    
+    // Measuring Humidity
     previousMillisDHT = currentMillisDHT;
     air_temperature = dht.readTemperature();
     air_humidity = dht.readHumidity();
