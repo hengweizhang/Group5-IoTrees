@@ -10,7 +10,7 @@
 
   CloudTemperatureSensor air_temperature;
   CloudIlluminance brightness;
-  int status_motor;
+  bool container_refill;
   CloudRelativeHumidity air_humidity;
   CloudRelativeHumidity soil_humidity;
 
@@ -18,53 +18,48 @@
   which are called when their values are changed from the Dashboard.
   These functions are generated with the Thing and added at the end of this sketch.
 */
-
 #include "thingProperties.h"
 #include <DHT.h>
-#include <DHT_U.h>
+//#include <DHT_U.h>
 // DHT11 - Version: 2.0.0
-
 
 //Defines
 //Pins
-#define DHTPIN 6            //D6 DHT digital
-#define DHTTYPE DHT11       
-#define SOILPIN 17          //A0/D17 Soil Humidity Analog input
-#define MOTORPIN 23         //A6/D23 Motor  Analog Output
-#define BRIGHTNESSPIN 20    //A3/D20 Photosensor Analog Input 
-#define HEARTBEATPIN  13    //D13 Hearbeat
+#define DHTPIN 6  //D6 DHT digital
+#define DHTTYPE DHT11
+#define SOILPIN 17        //A0/D17 Soil Humidity Analog input
+#define MOTORPIN 23       //A6/D23 Motor  Analog Output
+#define BRIGHTNESSPIN 20  //A3/D20 Photosensor Analog Input
+#define HEARTBEATPIN 13   //D13 Hearbeat
+
 //Sensors
-#define BRIGHTNESS_LOW 11
-#define BRIGHTNESS_HIGH 231
+// Values need to be adapted based on opservations
+#define BRIGHTNESS_LOW 11      // Define min value we consider brightness 'low'
+#define BRIGHTNESS_HIGH 231    // Define max value we consider brightness 'high'
+#define WETSOIL 277            // Define limit value we consider soil 'wet'
+#define DRYSOIL 380            // Define limit value we consider soil 'dry'
+#define UPDATEPERIOD 1000      //Time periode between readings in ms
+#define WATERINGPERIOD 600000  //Time period between watering actions 10min = 600000ms
+
+#define FLOWRATE        100     //cm^3/s
+#define CONTAINERVOLUME 1000    //cm^3
 
 //Variables
-// Values need to be adapted based on opservations
-#define wetSoil 277 // Define max value we consider soil 'wet'
-#define drySoil 380 // Define min value we consider soil 'dry'
-
 // CloudUpdateVariabls
 /*
- CloudTemperatureSensor air_temperature;
-  CloudIlluminance brightness;
-  int status_motor;
-  CloudRelativeHumidity air_humidity;
-  CloudRelativeHumidity soil_humidity;
+ CloudTemperatureSensor air_temperature;   CloudIlluminance brightness;    bool container_refill;   CloudRelativeHumidity air_humidity;   CloudRelativeHumidity soil_humidity;
 */
 //IOT
 int wifiStatus = 0;   //1 = ok, 0 = error
 int cloudStatus = 0;  //1 = ok, 0 = error
+unsigned long previousMillis = 0;
 
 //DHT
-uint updatePeriod = 1000;  //Time periode between readings
-unsigned long previousMillisDHT = 0;
 DHT dht(DHTPIN, DHTTYPE);
 
-//Photosensor
-int targetSoilHumidity = 0;  //value = 0-255
-
 //Motor
-int statusMotor = 0;
-
+unsigned long previousMillisMotor = 0;
+int container_content = CONTAINERVOLUME; //Volume in cm^3
 
 void setup() {
   // Initialize serial and wait for port to open:
@@ -75,12 +70,12 @@ void setup() {
   //initiate Pins
   //D6 DHT digital
   //D17 Soil Humidity Analog input
-  // D20 Photosensor Analog Input 
+  // D20 Photosensor Analog Input
   //D23 Motor  Analog Output
-  pinMode(SOILPIN,INPUT);
+  pinMode(SOILPIN, INPUT);
   pinMode(BRIGHTNESSPIN, INPUT);
   pinMode(MOTORPIN, OUTPUT);
-  pinMode(HEARTBEATPIN,OUTPUT);
+  pinMode(HEARTBEATPIN, OUTPUT);
 
   // Defined in thingProperties.h
   initProperties();
@@ -98,65 +93,89 @@ void setup() {
   setDebugMessageLevel(2);
   ArduinoCloud.printDebugInfo();
 
-
   //USER CODE
   dht.begin();
-  //DHT INIT
 }
 
 void loop() {
   ArduinoCloud.update();
   // Your code here
+  //do every action periodically
+  unsigned long currentMillis = millis();
 
-  //Soild Moisture Measurement
-  int moisture = analogRead(SOILPIN); //reading analog input
-  Serial.print("Analog output: ");
-  Serial.println(moisture);
-  
-  // Determine status of our soil
-  if (moisture < wetSoil) {
-    Serial.println("Status: Soil is too wet");
-  } else if (moisture >= wetSoil && moisture < drySoil) {
-    Serial.println("Status: Soil moisture is perfect");
-  } else {
-    Serial.println("Status: Soil is too dry - time to water!");
-    //value: the duty cycle: between 0 (always off) and 255 (always on). Allowed data types: int.
-    // analogWrite(MOTORPIN, 100);
-    // delay(100);
-    // analogWrite(MOTORPIN, 0);
-    //start watering motor for some time to make it more humid
-  }
-  Serial.println();
-  
-  //Brightness Measurement
-  int brt_pin = analogRead(BRIGHTNESSPIN);
-  int brightness = map(brt_pin, BRIGHTNESS_LOW, BRIGHTNESS_HIGH, 0, 100);
-  Serial.print(F("Brightness: "));
-  Serial.print(brightness);
-
-  //Humidity and Temperature Measurement
-  unsigned long currentMillisDHT = millis();
-  if (currentMillisDHT - previousMillisDHT >= updatePeriod) {
-    
-    // Measuring Humidity
-    previousMillisDHT = currentMillisDHT;
+  if (currentMillis - previousMillis >= UPDATEPERIOD) {
+    // Measuring data
+    previousMillis = currentMillis;
     air_temperature = dht.readTemperature();
     air_humidity = dht.readHumidity();
     soil_humidity = analogRead(SOILPIN);
     brightness = analogRead(BRIGHTNESSPIN);
-    statusMotor =  digitalRead(MOTORPIN);
+
+    //Soil Moisture Measurement
+    // Determine status of our soil
+    Serial.print(F("\n Soil Humidity: "));
+    Serial.print(soil_humidity);
+
+    //Wet soil
+    if (soil_humidity < WETSOIL) {
+      Serial.println("\n Status: Soil is too wet");
+      //Turn motor off
+      analogWrite(MOTORPIN, 0);
+      container_content = container_content - (currentMillis - previousMillis) *FLOWRATE; // V = V_0 - s*dV
+    } else if (soil_humidity >= WETSOIL && soil_humidity < DRYSOIL) {
+      //Perfect soil humidity
+      Serial.println("\n Status: Soil humidity is perfect");
+      //Turn motor off
+      analogWrite(MOTORPIN, 0);
+      container_content = container_content - (currentMillis - previousMillis) *FLOWRATE; // V = V_0 - s*dV
+    } else {
+      //start watering motor for some time to make it more humid
+      Serial.println("\n Status: Soil is too dry - time to water!");
+      //value: the duty cycle: between 0 (always off) and 255 (always on). Allowed data types: int. //DAC 10-bit 1023
+      if (currentMillis - previousMillisMotor >= WATERINGPERIOD && container_content > 0) {
+        previousMillisMotor = currentMillis;
+        //Turn motor on
+        analogWrite(MOTORPIN, 1023);
+        //delay(100);                     //Time for motor to operate in ms = 3000ms
+        //analogWrite(MOTORPIN, 0);
+      }else if(container_content <= 0){
+        container_refill = 0;
+      }
+    }   
+    Serial.print(F("\n Mapped Soil Humidity: "));
+    Serial.print(map(soil_humidity, 0, 4095, 0, 100));   //Map humidity //TODO TEST limits
+    Serial.print(soil_humidity);
+    Serial.println("Container Content in cm^3:");
+    Serial.print(container_content);
+
+    //Brightness Measurement
+    Serial.print(F(" Brightness: "));     //TODO REMOVE AFTER CALIBRATION
+    Serial.print(brightness);             //REMOVE AFTER CALIBRATION
+    Serial.print(F("Brightness: "));
+    Serial.print(map(analogRead(BRIGHTNESSPIN), BRIGHTNESS_LOW, BRIGHTNESS_HIGH, 0, 100));
+
+    //Humidity and Temperature Measurement
     Serial.print(F("\n Humidity: "));
     Serial.print(air_humidity);
     Serial.print(F("%  Temperature: "));
     Serial.print(air_temperature);
-    Serial.print(F(" Soil Humidity: "));
-    Serial.print(soil_humidity);
-    Serial.print(F(" Brightness: "));
-    Serial.print(brightness);
     Serial.print(F("\n"));
-    Serial.print(statusMotor);
-    Serial.print(F("\n"));
+
+    //Heartbeat
     digitalWrite(HEARTBEATPIN, !digitalRead(HEARTBEATPIN));
-    digitalWrite(MOTORPIN, !digitalRead(MOTORPIN));
+  }
+}
+/*
+  Since ContainerRefill is READ_WRITE variable, onContainerRefillChange() is
+  executed every time a new value is received from IoT Cloud.
+*/
+void onContainerRefillChange()  {
+  // Add your code here to act upon ContainerRefill change
+  Serial.println("\n Container refill: ");
+  if(container_refill == 1){  //TODO
+    container_content == CONTAINERVOLUME;
+    Serial.println("correct");
+  }else{
+    Serial.println("wrong");
   }
 }
