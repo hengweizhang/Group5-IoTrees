@@ -119,15 +119,23 @@ void loop() {
     Serial.println("Status: Soil moisture is perfect");
   } else {
     Serial.println("Status: Soil is too dry - time to water!");
+    //value: the duty cycle: between 0 (always off) and 255 (always on). Allowed data types: int.
+    // analogWrite(MOTORPIN, 100);
+    // delay(100);
+    // analogWrite(MOTORPIN, 0);
     //start watering motor for some time to make it more humid
   }
   Serial.println();
   
+  //Brightness Measurement
+  int brt_pin = analogRead(BRIGHTNESSPIN);
+  int brightness = map(brt_pin, BRIGHTNESS_LOW, BRIGHTNESS_HIGH, 0, 100);
+  Serial.print(F("Brightness: "));
+  Serial.print(brightness);
 
   //Humidity and Temperature Measurement
   unsigned long currentMillisDHT = millis();
   if (currentMillisDHT - previousMillisDHT >= updatePeriod) {
-    
     
     // Measuring Humidity
     previousMillisDHT = currentMillisDHT;
