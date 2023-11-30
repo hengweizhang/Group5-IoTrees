@@ -34,12 +34,12 @@
 
 //Sensors
 // Values need to be adapted based on opservations
-#define BRIGHTNESS_LOW 11      // Define min value we consider brightness 'low'
-#define BRIGHTNESS_HIGH 231    // Define max value we consider brightness 'high'
-#define WETSOIL 277            // Define limit value we consider soil 'wet'
-#define DRYSOIL 380            // Define limit value we consider soil 'dry'
+#define BRIGHTNESS_LOW 1670      // Define min value we consider brightness 'low'
+#define BRIGHTNESS_HIGH 15    // Define max value we consider brightness 'high'
+#define WETSOIL 277            // Define limit value we consider soil 'wet' max is 4095
+#define DRYSOIL 380            // Define limit value we consider soil 'dry' 
 #define UPDATEPERIOD 1000      //Time periode between readings in ms
-#define WATERINGPERIOD 600000  //Time period between watering actions 10min = 600000ms
+#define WATERINGPERIOD 30000  //Time period between watering actions 10min = 600000ms
 
 #define FLOWRATE        100     //cm^3/s
 #define CONTAINERVOLUME 1000    //cm^3
