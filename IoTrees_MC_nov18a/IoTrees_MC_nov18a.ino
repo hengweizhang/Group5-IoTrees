@@ -34,15 +34,15 @@
 
 //Sensors
 // Values need to be adapted based on opservations
-#define BRIGHTNESS_LOW 1670      // Define min value we consider brightness 'low'
+#define BRIGHTNESS_LOW 3800      // Define min value we consider brightness 'low'
 #define BRIGHTNESS_HIGH 15    // Define max value we consider brightness 'high'
-#define WETSOIL 277            // Define limit value we consider soil 'wet' max is 4095
-#define DRYSOIL 380            // Define limit value we consider soil 'dry' 
-#define UPDATEPERIOD 1000      //Time periode between readings in ms
-#define WATERINGPERIOD 30000  //Time period between watering actions 10min = 600000ms
+#define WETSOIL (1700+500)            // Define limit value we consider soil 'wet' 1700 max is 4095
+#define DRYSOIL (3000)            // Define limit value we consider soil 'dry' 
+#define UPDATEPERIOD    1000      //Time periode between readings in ms
+#define WATERINGPERIOD 600000  //Time period between watering actions 10min = 600000ms
 
-#define FLOWRATE        100     //cm^3/s
-#define CONTAINERVOLUME 1000    //cm^3
+#define FLOWRATE        300    //cm^3/s
+#define CONTAINERVOLUME 12000    //cm^3
 
 //Variables
 // CloudUpdateVariabls
@@ -142,17 +142,22 @@ void loop() {
         container_refill = 0;
       }
     }   
-    Serial.print(F("\n Mapped Soil Humidity: "));
-    Serial.print(map(soil_humidity, 0, 4095, 0, 100));   //Map humidity //TODO TEST limits
+
+    Serial.print(F("\n  Soil Humidity: "));
     Serial.print(soil_humidity);
-    Serial.println("Container Content in cm^3:");
+    soil_humidity = map(4095 - soil_humidity, 0, 4095, 0, 100);
+    Serial.print(F("\n Mapped Soil Humidity: "));
+    Serial.print(soil_humidity);   //Map humidity //TODO TEST limits
+    
+    Serial.print(F("\n Container Content in cm^3:"));
     Serial.print(container_content);
 
     //Brightness Measurement
-    Serial.print(F(" Brightness: "));     //TODO REMOVE AFTER CALIBRATION
+    Serial.print(F("\n Brightness: "));     //TODO REMOVE AFTER CALIBRATION
     Serial.print(brightness);             //REMOVE AFTER CALIBRATION
-    Serial.print(F("Brightness: "));
-    Serial.print(map(analogRead(BRIGHTNESSPIN), BRIGHTNESS_LOW, BRIGHTNESS_HIGH, 0, 100));
+    brightness = map(BRIGHTNESS_LOW - brightness, BRIGHTNESS_HIGH, BRIGHTNESS_LOW, 0, 100);
+    Serial.print(F("\n Mapped Brightness: "));
+    Serial.print(brightness); 
 
     //Humidity and Temperature Measurement
     Serial.print(F("\n Humidity: "));
