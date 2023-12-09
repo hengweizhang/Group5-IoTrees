@@ -14,7 +14,8 @@ With our Project we aim to create a system that tracks certain measurements of a
  IoTrees_MC_nov18a                => Arduino sketch folder
   ├── IoTrees_MC_nov18a.ino       => main Arduino file
   ├── ReadMe.adoc                 => explaining general information of project
-  ├── arduino_secrets.h           => specifiying wifi passport and secret device key to connect to cloud, only uploaded as we                                       are working on a prototype, normally this file should be kept secret!
+  ├── arduino_secrets.h           => specifiying wifi passport and secret device key to connect to cloud, only uploaded as we
+                                     are working on a prototype, normally this file should be kept secret!
   ├── sketch.json                 => 
   └── thingProperties.h           => devining Things which properties will be sent to Arduino Cloud
 .... 
