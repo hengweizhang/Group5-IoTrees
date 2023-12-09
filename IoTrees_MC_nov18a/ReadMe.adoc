@@ -1,55 +1,29 @@
-:Author: bnjmn_hsr
+:Author: Group 5
 :Email:
-:Date: 18/11/2023
-:Revision: version#
+:Date: 09/12/2023
+:Revision: version01
 :License: Public Domain
 
-= Project: {Project}
+= Project: {Plant Care System}
 
-Describe your project
-
-== Step 1: Installation
-Please describe the steps to install this project.
-
-For example:
-
-1. Open this file
-2. Edit as you like
-3. Release to the World!
-
-== Step 2: Assemble the circuit
-
-Assemble the circuit following the diagram layout.png attached to the sketch
-
-== Step 3: Load the code
-
-Upload the code contained in this sketch on to your board
+With our Project we aim to create a system that tracks certain measurements of a plant and sends them to the Arduino Cloud Platform for an individual or business to track. In total we are tracking the plant's soil humidity and environment temperature, brightness and humidity. Based on the soil humidity, we have implemented an automatic watering systems that always waters the plant when its humidity falls under a certain level. 
 
 === Folder structure
 
 ....
- sketch123                => Arduino sketch folder
-  ├── sketch123.ino       => main Arduino file
-  ├── schematics.png      => (optional) an image of the required schematics
-  ├── layout.png          => (optional) an image of the layout
-  └── ReadMe.adoc         => this file
-....
-
-=== License
-This project is released under a {License} License.
-
-=== Contributing
-To contribute to this project please contact: 
+ IoTrees_MC_nov18a                => Arduino sketch folder
+  ├── IoTrees_MC_nov18a.ino       => main Arduino file
+  ├── ReadMe.adoc                 => explaining general information of project
+  ├── arduino_secrets.h           => specifiying wifi passport and secret device key to connect to cloud, only uploaded as we                                       are working on a prototype, normally this file should be kept secret!
+  ├── sketch.json                 => 
+  └── thingProperties.h           => devining Things which properties will be sent to Arduino Cloud
+.... 
 
 === BOM
-Add the bill of the materials you need for this project.
+To see the BOM of our project, please refer to our OneNote Project Notes:
+https://1drv.ms/u/s!AgNkyD8byWtylwQwREYuiuyeChLc
 
-|===
-| ID | Part name      | Part number | Quantity
-| R1 | 10k Resistor   | 1234-abcd   | 10       
-| L1 | Red LED        | 2345-asdf   | 5        
-| A1 | Arduino Zero   | ABX00066    | 1        
-|===
+
 
 
 === Help
