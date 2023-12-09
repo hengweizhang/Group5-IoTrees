@@ -11,8 +11,8 @@ With our Project we aim to create a system that tracks certain measurements of a
 === Folder structure
 
 ....
- IoTrees_MC_nov18a                => Arduino sketch folder
-  ├── IoTrees_MC_nov18a.ino       => main Arduino file
+ IoTrees_Prototype_Sketch         => Arduino sketch folder
+  ├── IoTrees_Prototype.ino       => main Arduino file
   ├── ReadMe.adoc                 => explaining general information of project
   ├── arduino_secrets.h           => specifiying wifi passport and secret device key to connect to cloud, only uploaded as we
                                      are working on a prototype, normally this file should be kept secret!
