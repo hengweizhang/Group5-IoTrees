@@ -25,7 +25,7 @@ To see the BOM of our project, please refer to our OneNote Project Notes:
 https://1drv.ms/u/s!AgNkyD8byWtylwQwREYuiuyeChLc
 
 === SCHEMATIC
-![alt text](https://github.com/hengweizhang/Group5-IoTrees/blob/main/IoTrees_Prototype_Sketch/IIOT_Schematic.png?raw=true)
+Schematic: https://github.com/hengweizhang/Group5-IoTrees/blob/main/IoTrees_Prototype_Sketch/IIOT_Schematic.png?raw=true
 
 
 === Help
