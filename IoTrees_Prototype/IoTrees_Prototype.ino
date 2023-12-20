@@ -132,7 +132,7 @@ void loop() {
       //start watering motor for some time to make it more humid
       Serial.println("\n Status: Soil is too dry - time to water!");
 
-      if ( (currentMillis - previousMillisMotor) >= WATERING_TIME ) {
+      if ( (analogRead(MOTORPIN) == 1) && ( (currentMillis - previousMillisMotor) >= WATERING_TIME) ) {
         Serial.println("\n Maximum Watering Time Exceeded, Initiating Shutdown!");
         analogWrite(MOTORPIN, 0);
         container_content = 0;
@@ -140,7 +140,7 @@ void loop() {
       }
 
       //value: the duty cycle: between 0 (always off) and 255 (always on). Allowed data types: int. //DAC 10-bit 1023
-      if ( (analogRead(MOTORPIN) == 1) && currentMillis - previousMillisMotor >= WATERINGPERIOD && container_content > 0) {
+      if ( currentMillis - previousMillisMotor >= WATERINGPERIOD && container_content > 0) {
         previousMillisMotor = currentMillis;
         //Turn motor on
         analogWrite(MOTORPIN, 1023);
