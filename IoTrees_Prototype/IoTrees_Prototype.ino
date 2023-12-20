@@ -40,7 +40,7 @@
 #define DRYSOIL (3000)            // Define limit value we consider soil 'dry' 
 #define UPDATEPERIOD    1000      //Time periode between readings in ms
 #define WATERINGPERIOD 600000  //Time period between watering actions 10min = 600000ms
-
+#define WATERING_TIME 30000  //Maximum Time Period that pump runs until shutdown 30 sec = 30000 ms
 #define FLOWRATE        300    //cm^3/s
 #define CONTAINERVOLUME 12000    //cm^3
 
@@ -131,6 +131,14 @@ void loop() {
     } else {
       //start watering motor for some time to make it more humid
       Serial.println("\n Status: Soil is too dry - time to water!");
+
+      if ( (currentMillis - previousMillisMotor) >= WATERING_TIME ) {
+        Serial.println("\n Maximum Watering Time Exceeded, Initiating Shutdown!");
+        analogWrite(MOTORPIN, 0);
+        container_content = 0;
+        container_refill = 0;
+      }
+
       //value: the duty cycle: between 0 (always off) and 255 (always on). Allowed data types: int. //DAC 10-bit 1023
       if (currentMillis - previousMillisMotor >= WATERINGPERIOD && container_content > 0) {
         previousMillisMotor = currentMillis;
