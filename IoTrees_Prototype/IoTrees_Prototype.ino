@@ -132,7 +132,7 @@ void loop() {
       //start watering motor for some time to make it more humid
       Serial.println("\n Status: Soil is too dry - time to water!");
 
-      if ( (analogRead(MOTORPIN) == 1) && ( (currentMillis - previousMillisMotor) >= WATERING_TIME) ) {
+      if ( (analogRead(MOTORPIN) == 1023) && ( (currentMillis - previousMillisMotor) >= WATERING_TIME) ) {
         Serial.println("\n Maximum Watering Time Exceeded, Initiating Shutdown!");
         analogWrite(MOTORPIN, 0);
         container_content = 0;
