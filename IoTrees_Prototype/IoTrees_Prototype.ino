@@ -140,7 +140,7 @@ void loop() {
       }
 
       //value: the duty cycle: between 0 (always off) and 255 (always on). Allowed data types: int. //DAC 10-bit 1023
-      if (currentMillis - previousMillisMotor >= WATERINGPERIOD && container_content > 0) {
+      if ( (analogRead(MOTORPIN) == 1) && currentMillis - previousMillisMotor >= WATERINGPERIOD && container_content > 0) {
         previousMillisMotor = currentMillis;
         //Turn motor on
         analogWrite(MOTORPIN, 1023);
